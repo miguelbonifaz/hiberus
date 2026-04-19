@@ -25,22 +25,24 @@ class ProductRepository extends ServiceEntityRepository
                 ->setParameter('search', '%'.$search.'%');
         }
 
+        $countQb = clone $qb;
+        $countQb->select('COUNT(p.id)');
+        $qb->resetDQLPart('orderBy');
+        $total = (int) $countQb->getQuery()->getSingleScalarResult();
+
         $allowedSorts = ['id', 'name', 'price', 'stock', 'category', 'createdAt'];
         if (! in_array($sort, $allowedSorts)) {
             $sort = 'id';
         }
         $direction = strtoupper($direction) === 'DESC' ? 'DESC' : 'ASC';
 
-        $qb->orderBy('p.'.$sort, $direction);
-
-        $total = (clone $qb)->select('COUNT(p.id)')->getQuery()->getSingleScalarResult();
-
-        $qb->setFirstResult(($page - 1) * $limit)
+        $qb->orderBy('p.'.$sort, $direction)
+            ->setFirstResult(($page - 1) * $limit)
             ->setMaxResults($limit);
 
         return [
             'items' => $qb->getQuery()->getResult(),
-            'total' => (int) $total,
+            'total' => $total,
             'page' => $page,
             'limit' => $limit,
         ];

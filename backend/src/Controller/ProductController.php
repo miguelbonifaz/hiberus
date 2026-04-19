@@ -31,12 +31,12 @@ class ProductController extends AbstractController
 
         $result = $this->productRepo->findPaginated($search, $page, 10, $sort, $direction);
 
-        return $this->json([
-            'items' => $result['items'],
+        return new JsonResponse([
+            'items' => array_map(fn (Product $p) => $p->toArray(), $result['items']),
             'total' => $result['total'],
             'page' => $result['page'],
             'limit' => $result['limit'],
-        ], Response::HTTP_OK, [], ['groups' => 'product:read']);
+        ]);
     }
 
     #[Route('', name: 'create', methods: ['POST'])]
@@ -58,12 +58,12 @@ class ProductController extends AbstractController
                 $violations[$error->getPropertyPath()] = $error->getMessage();
             }
 
-            return $this->json(['errors' => $violations], Response::HTTP_BAD_REQUEST);
+            return new JsonResponse(['errors' => $violations], Response::HTTP_BAD_REQUEST);
         }
 
         $this->em->persist($product);
         $this->em->flush();
 
-        return $this->json($product, Response::HTTP_CREATED, [], ['groups' => 'product:read']);
+        return new JsonResponse($product->toArray(), Response::HTTP_CREATED);
     }
 }

@@ -4,7 +4,6 @@ namespace App\Entity;
 
 use App\Repository\OrderItemRepository;
 use Doctrine\ORM\Mapping as ORM;
-use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: OrderItemRepository::class)]
@@ -14,7 +13,6 @@ class OrderItem
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['order:read'])]
     private ?int $id = null;
 
     #[ORM\ManyToOne(inversedBy: 'items')]
@@ -23,16 +21,13 @@ class OrderItem
 
     #[ORM\ManyToOne]
     #[ORM\JoinColumn(nullable: false)]
-    #[Groups(['order:read'])]
     private ?Product $product = null;
 
     #[ORM\Column]
     #[Assert\Positive]
-    #[Groups(['order:read'])]
     private ?int $quantity = null;
 
     #[ORM\Column]
-    #[Groups(['order:read'])]
     private ?float $unitPrice = null;
 
     public function getId(): ?int
@@ -88,9 +83,19 @@ class OrderItem
         return $this;
     }
 
-    #[Groups(['order:read'])]
     public function getSubtotal(): float
     {
         return $this->unitPrice * $this->quantity;
+    }
+
+    public function toArray(): array
+    {
+        return [
+            'id' => $this->id,
+            'product' => $this->product?->toArray(),
+            'quantity' => $this->quantity,
+            'unitPrice' => $this->unitPrice,
+            'subtotal' => $this->getSubtotal(),
+        ];
     }
 }

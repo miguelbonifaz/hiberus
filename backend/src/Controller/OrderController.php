@@ -31,7 +31,7 @@ class OrderController extends AbstractController
         $data = json_decode($request->getContent(), true);
 
         if (empty($data['items'])) {
-            return $this->json(['error' => 'Order must have at least one item.'], Response::HTTP_BAD_REQUEST);
+            return new JsonResponse(['error' => 'Order must have at least one item.'], Response::HTTP_BAD_REQUEST);
         }
 
         $order = new Order;
@@ -40,16 +40,16 @@ class OrderController extends AbstractController
         foreach ($data['items'] as $itemData) {
             $product = $this->productRepo->find($itemData['productId'] ?? 0);
             if (! $product) {
-                return $this->json(['error' => sprintf('Product %d not found.', $itemData['productId'] ?? 0)], Response::HTTP_NOT_FOUND);
+                return new JsonResponse(['error' => sprintf('Product %d not found.', $itemData['productId'] ?? 0)], Response::HTTP_NOT_FOUND);
             }
 
             $quantity = $itemData['quantity'] ?? 0;
             if ($quantity <= 0) {
-                return $this->json(['error' => 'Quantity must be greater than 0.'], Response::HTTP_BAD_REQUEST);
+                return new JsonResponse(['error' => 'Quantity must be greater than 0.'], Response::HTTP_BAD_REQUEST);
             }
 
             if ($product->getStock() < $quantity) {
-                return $this->json(['error' => sprintf('Insufficient stock for product "%s". Available: %d', $product->getName(), $product->getStock())], Response::HTTP_BAD_REQUEST);
+                return new JsonResponse(['error' => sprintf('Insufficient stock for product "%s". Available: %d', $product->getName(), $product->getStock())], Response::HTTP_BAD_REQUEST);
             }
 
             $orderItem = new OrderItem;
@@ -70,13 +70,13 @@ class OrderController extends AbstractController
                 $violations[$error->getPropertyPath()] = $error->getMessage();
             }
 
-            return $this->json(['errors' => $violations], Response::HTTP_BAD_REQUEST);
+            return new JsonResponse(['errors' => $violations], Response::HTTP_BAD_REQUEST);
         }
 
         $this->em->persist($order);
         $this->em->flush();
 
-        return $this->json($order, Response::HTTP_CREATED, [], ['groups' => 'order:read']);
+        return new JsonResponse($order->toArray(), Response::HTTP_CREATED);
     }
 
     #[Route('/{id}', name: 'detail', methods: ['GET'])]
@@ -86,14 +86,14 @@ class OrderController extends AbstractController
         $order = $this->orderRepo->find($id);
 
         if (! $order) {
-            return $this->json(['error' => 'Order not found.'], Response::HTTP_NOT_FOUND);
+            return new JsonResponse(['error' => 'Order not found.'], Response::HTTP_NOT_FOUND);
         }
 
         if ($order->getCustomerId() !== $customerId) {
-            return $this->json(['error' => 'Access denied. This order does not belong to you.'], Response::HTTP_FORBIDDEN);
+            return new JsonResponse(['error' => 'Access denied. This order does not belong to you.'], Response::HTTP_FORBIDDEN);
         }
 
-        return $this->json($order, Response::HTTP_OK, [], ['groups' => 'order:read']);
+        return new JsonResponse($order->toArray());
     }
 
     #[Route('/{id}/checkout', name: 'checkout', methods: ['POST'])]
@@ -103,15 +103,15 @@ class OrderController extends AbstractController
         $order = $this->orderRepo->find($id);
 
         if (! $order) {
-            return $this->json(['error' => 'Order not found.'], Response::HTTP_NOT_FOUND);
+            return new JsonResponse(['error' => 'Order not found.'], Response::HTTP_NOT_FOUND);
         }
 
         if ($order->getCustomerId() !== $customerId) {
-            return $this->json(['error' => 'Access denied. This order does not belong to you.'], Response::HTTP_FORBIDDEN);
+            return new JsonResponse(['error' => 'Access denied. This order does not belong to you.'], Response::HTTP_FORBIDDEN);
         }
 
         if ($order->getStatus() !== Order::STATUS_PENDING) {
-            return $this->json(['error' => sprintf('Order cannot be checked out. Current status: %s', $order->getStatus())], Response::HTTP_BAD_REQUEST);
+            return new JsonResponse(['error' => sprintf('Order cannot be checked out. Current status: %s', $order->getStatus())], Response::HTTP_BAD_REQUEST);
         }
 
         $paymentSuccess = rand(1, 10) > 2;
@@ -121,12 +121,18 @@ class OrderController extends AbstractController
             $order->setPaidAt(new \DateTimeImmutable);
             $this->em->flush();
 
-            return $this->json(['message' => 'Payment successful.', 'order' => $order], Response::HTTP_OK, [], ['groups' => 'order:read']);
+            return new JsonResponse([
+                'message' => 'Payment successful.',
+                'order' => $order->toArray(),
+            ]);
         }
 
         $order->setStatus(Order::STATUS_FAILED);
         $this->em->flush();
 
-        return $this->json(['message' => 'Payment failed. Please try again.', 'order' => $order], Response::HTTP_PAYMENT_REQUIRED, [], ['groups' => 'order:read']);
+        return new JsonResponse([
+            'message' => 'Payment failed. Please try again.',
+            'order' => $order->toArray(),
+        ], Response::HTTP_PAYMENT_REQUIRED);
     }
 }

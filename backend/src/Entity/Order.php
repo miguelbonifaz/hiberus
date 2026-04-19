@@ -6,7 +6,6 @@ use App\Repository\OrderRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
-use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: OrderRepository::class)]
 #[ORM\Table(name: 'orders')]
@@ -21,31 +20,24 @@ class Order
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['order:read'])]
     private ?int $id = null;
 
     #[ORM\Column]
-    #[Groups(['order:read'])]
     private ?int $customerId = null;
 
     #[ORM\Column(length: 20)]
-    #[Groups(['order:read'])]
     private ?string $status = self::STATUS_PENDING;
 
     #[ORM\Column]
-    #[Groups(['order:read'])]
     private ?float $total = 0;
 
     #[ORM\Column]
-    #[Groups(['order:read'])]
     private ?\DateTimeImmutable $createdAt = null;
 
     #[ORM\Column(nullable: true)]
-    #[Groups(['order:read'])]
     private ?\DateTimeImmutable $paidAt = null;
 
     #[ORM\OneToMany(mappedBy: 'order', targetEntity: OrderItem::class, cascade: ['persist'])]
-    #[Groups(['order:read'])]
     private Collection $items;
 
     public function __construct()
@@ -137,5 +129,18 @@ class Order
         );
 
         return $this;
+    }
+
+    public function toArray(): array
+    {
+        return [
+            'id' => $this->id,
+            'customerId' => $this->customerId,
+            'status' => $this->status,
+            'total' => $this->total,
+            'items' => $this->items->map(fn (OrderItem $item) => $item->toArray())->toArray(),
+            'createdAt' => $this->createdAt?->format('c'),
+            'paidAt' => $this->paidAt?->format('c'),
+        ];
     }
 }

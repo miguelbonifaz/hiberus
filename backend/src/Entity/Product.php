@@ -4,7 +4,6 @@ namespace App\Entity;
 
 use App\Repository\ProductRepository;
 use Doctrine\ORM\Mapping as ORM;
-use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: ProductRepository::class)]
@@ -14,38 +13,31 @@ class Product
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['product:read', 'order:read'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
     #[Assert\NotBlank]
     #[Assert\Length(min: 2, max: 255)]
-    #[Groups(['product:read', 'order:read'])]
     private ?string $name = null;
 
     #[ORM\Column(type: 'text', nullable: true)]
-    #[Groups(['product:read'])]
     private ?string $description = null;
 
     #[ORM\Column]
     #[Assert\NotBlank]
     #[Assert\Positive]
-    #[Groups(['product:read', 'order:read'])]
     private ?float $price = null;
 
     #[ORM\Column]
     #[Assert\NotBlank]
     #[Assert\PositiveOrZero]
-    #[Groups(['product:read'])]
     private ?int $stock = null;
 
     #[ORM\Column(length: 50)]
     #[Assert\NotBlank]
-    #[Groups(['product:read'])]
     private ?string $category = null;
 
     #[ORM\Column]
-    #[Groups(['product:read'])]
     private ?\DateTimeImmutable $createdAt = null;
 
     public function __construct()
@@ -121,5 +113,18 @@ class Product
     public function getCreatedAt(): ?\DateTimeImmutable
     {
         return $this->createdAt;
+    }
+
+    public function toArray(): array
+    {
+        return [
+            'id' => $this->id,
+            'name' => $this->name,
+            'description' => $this->description,
+            'price' => $this->price,
+            'stock' => $this->stock,
+            'category' => $this->category,
+            'createdAt' => $this->createdAt?->format('c'),
+        ];
     }
 }
