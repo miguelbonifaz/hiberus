@@ -2,18 +2,49 @@
 
 MVP de gestión de pedidos y pagos con API REST (Symfony) y frontend (React + TypeScript).
 
+## Requisitos
+
+- [Docker](https://docs.docker.com/get-docker/) + [Docker Compose](https://docs.docker.com/compose/install/)
+
 ## Inicio Rápido
 
 ```bash
+# Clonar y levantar
+git clone https://github.com/miguelbonifaz/hiberus.git && cd hiberus
 docker compose up --build
-
-# Backend: http://localhost:8000
-# Frontend: http://localhost:3000
 ```
 
 La primera vez se ejecutan automáticamente:
+- Instalación de dependencias (Composer + npm)
 - Migraciones de base de datos
-- Fixtures con datos de ejemplo (8 productos)
+- Fixtures con datos de ejemplo (23 productos)
+
+### URLs locales
+
+| Servicio  | URL                          |
+|-----------|------------------------------|
+| Backend   | http://localhost:8000/api/   |
+| Frontend  | http://localhost:3000         |
+| PostgreSQL| localhost:5433 (usuario: `hiberus`, contraseña: `hiberus`, DB: `hiberus_test`) |
+
+### Detener
+
+```bash
+docker compose down          # detener contenedores
+docker compose down -v       # detener y eliminar volúmenes (resetea la DB)
+```
+
+## Autenticación Simulada
+
+No hay sistema de login real. Se usan headers HTTP:
+
+| Header        | Valor    | Efecto                          |
+|---------------|----------|---------------------------------|
+| `X-User-Id`   | `1`      | ID del usuario simulado         |
+| `X-User-Role` | `ADMIN`  | Acceso a crear productos        |
+| `X-User-Role` | `CLIENT` | Acceso a pedidos y checkout     |
+
+El frontend envía estos headers automáticamente vía interceptor Axios leyendo `localStorage('user')`.
 
 ## Modelo de Datos
 
@@ -57,22 +88,25 @@ La primera vez se ejecutan automáticamente:
 | GET    | /api/orders/{id}          | Ver detalle de pedido     | Owner  |
 | POST   | /api/orders/{id}/checkout | Checkout simulado         | Owner  |
 
-### Autenticación Simulada
-
-```
-X-User-Id: 1
-X-User-Role: ADMIN
-```
-```
-X-User-Id: 2
-X-User-Role: CLIENT
-```
-
 ## Pruebas
 
 ```bash
+# Tests del backend
 docker compose exec backend php bin/phpunit
+
+# Linter PHP (obligatorio antes de commit)
+docker compose exec backend ./vendor/bin/pint
+
+# Typecheck del frontend (obligatorio antes de commit)
+docker compose exec frontend npm run build
 ```
+
+## Flujo de Pago (Simulado)
+
+1. `POST /api/orders` → pedido creado (status: `pending`), carrito vaciado
+2. Frontend muestra `PaymentForm` (cosmético, no envía datos de tarjeta)
+3. `POST /api/orders/{id}/checkout` → resultado aleatorio: 80% éxito (`paid`), 20% fallo (`failed`)
+4. Éxito → `/payment/success`, fallo → `/payment/failed`
 
 ## Documentación
 
@@ -80,6 +114,6 @@ docker compose exec backend php bin/phpunit
 
 ## Stack
 
-- **Backend**: PHP 8.2, Symfony 7, Doctrine ORM, PostgreSQL 16
+- **Backend**: PHP 8.4, Symfony 7, Doctrine ORM, PostgreSQL 16
 - **Frontend**: React 19, TypeScript, Vite, React Router 7, Axios
 - **Infra**: Docker Compose (PHP/Apache, PostgreSQL 16, Node/Vite)
