@@ -2,18 +2,17 @@ version: '3.8'
 
 services:
   db:
-    image: mysql:8.0
+    image: postgres:16
     environment:
-      MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: hiberus_test
-      MYSQL_USER: hiberus
-      MYSQL_PASSWORD: hiberus
+      POSTGRES_DB: hiberus_test
+      POSTGRES_USER: hiberus
+      POSTGRES_PASSWORD: hiberus
     ports:
-      - "3306:3306"
+      - "5432:5432"
     volumes:
-      - db_data:/var/lib/mysql
+      - db_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      test: ["CMD-SHELL", "pg_isready -U hiberus"]
       interval: 5s
       timeout: 5s
       retries: 10
@@ -30,7 +29,7 @@ services:
       db:
         condition: service_healthy
     environment:
-      DATABASE_URL: "mysql://hiberus:hiberus@db:3306/hiberus_test?serverVersion=8.0"
+      DATABASE_URL: "postgresql://hiberus:hiberus@db:5432/hiberus_test?serverVersion=16&charset=utf8"
 
   frontend:
     build:

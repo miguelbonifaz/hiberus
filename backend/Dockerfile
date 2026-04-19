@@ -1,8 +1,8 @@
 FROM php:8.3-apache
 
 RUN apt-get update && apt-get install -y \
-    git unzip libzip-dev libicu-dev \
-    && docker-php-ext-install intl pdo pdo_mysql zip \
+    git unzip libzip-dev libicu-dev libpq-dev \
+    && docker-php-ext-install intl pdo pdo_pgsql pgsql zip \
     && a2enmod rewrite
 
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
