@@ -1,20 +1,20 @@
-import { useState, useEffect, useMemo } from 'react';
-import { useNavigate } from 'react-router';
-import { useAuth } from '../context/AuthContext';
-import { useCart } from '../context/CartContext';
-import { useToast } from '../context/ToastContext';
-import { productApi } from '../services/api';
-import type { Product, PaginatedResponse } from '../types';
+import { useState, useEffect, useMemo } from "react";
+import { useNavigate } from "react-router";
+import { useAuth } from "../context/AuthContext";
+import { useCart } from "../context/CartContext";
+import { useToast } from "../context/ToastContext";
+import { productApi } from "../services/api";
+import type { Product, PaginatedResponse } from "../types";
 
-const CATEGORIES = ['Electronics', 'Accessories', 'Furniture'] as const;
+const CATEGORIES = ["Electronics", "Accessories", "Furniture"] as const;
 const SORT_OPTIONS = [
-  { value: 'id', label: 'Default' },
-  { value: 'name', label: 'Name' },
-  { value: 'price', label: 'Price' },
-  { value: 'category', label: 'Category' },
+  { value: "id", label: "Default" },
+  { value: "name", label: "Name" },
+  { value: "price", label: "Price" },
+  { value: "category", label: "Category" },
 ] as const;
 
-type SortValue = (typeof SORT_OPTIONS)[number]['value'];
+type SortValue = (typeof SORT_OPTIONS)[number]["value"];
 
 export default function CatalogPage() {
   const { isAdmin } = useAuth();
@@ -24,14 +24,15 @@ export default function CatalogPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
-  const [search, setSearch] = useState('');
-  const [sort, setSort] = useState<SortValue>('id');
-  const [direction, setDirection] = useState<'ASC' | 'DESC'>('ASC');
-  const [category, setCategory] = useState('');
+  const [search, setSearch] = useState("");
+  const [sort, setSort] = useState<SortValue>("id");
+  const [direction, setDirection] = useState<"ASC" | "DESC">("ASC");
+  const [category, setCategory] = useState("");
   const [loading, setLoading] = useState(false);
 
   const activeFilters = useMemo(() => {
-    const count = (category ? 1 : 0) + (search ? 1 : 0) + (sort !== 'id' ? 1 : 0);
+    const count =
+      (category ? 1 : 0) + (search ? 1 : 0) + (sort !== "id" ? 1 : 0);
     return count;
   }, [category, search, sort]);
 
@@ -48,10 +49,10 @@ export default function CatalogPage() {
   }, [search, page, sort, direction, category]);
 
   const clearFilters = () => {
-    setSearch('');
-    setCategory('');
-    setSort('id');
-    setDirection('ASC');
+    setSearch("");
+    setCategory("");
+    setSort("id");
+    setDirection("ASC");
     setPage(1);
   };
 
@@ -61,11 +62,11 @@ export default function CatalogPage() {
     <div className="page">
       <div className="page-header">
         <h1 className="page-title">Catalog</h1>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <span className="page-subtitle">{total} products</span>
           {isAdmin && (
             <button
-              onClick={() => navigate('/products/new')}
+              onClick={() => navigate("/products/new")}
               className="btn btn-primary btn-sm"
             >
               + New Product
@@ -104,7 +105,7 @@ export default function CatalogPage() {
               <button
                 className="filter-clear-btn"
                 onClick={() => {
-                  setSearch('');
+                  setSearch("");
                   setPage(1);
                 }}
                 aria-label="Clear search"
@@ -132,12 +133,12 @@ export default function CatalogPage() {
             <button
               className="btn btn-sort-dir"
               onClick={() => {
-                setDirection(direction === 'ASC' ? 'DESC' : 'ASC');
+                setDirection(direction === "ASC" ? "DESC" : "ASC");
                 setPage(1);
               }}
-              title={direction === 'ASC' ? 'Ascending' : 'Descending'}
+              title={direction === "ASC" ? "Ascending" : "Descending"}
             >
-              {direction === 'ASC' ? '↑' : '↓'}
+              {direction === "ASC" ? "↑" : "↓"}
             </button>
           </div>
         </div>
@@ -146,9 +147,9 @@ export default function CatalogPage() {
           <span className="filter-categories-label">Category</span>
           <div className="filter-pills">
             <button
-              className={`filter-pill ${category === '' ? 'filter-pill--active' : ''}`}
+              className={`filter-pill ${category === "" ? "filter-pill--active" : ""}`}
               onClick={() => {
-                setCategory('');
+                setCategory("");
                 setPage(1);
               }}
             >
@@ -157,9 +158,9 @@ export default function CatalogPage() {
             {CATEGORIES.map((cat) => (
               <button
                 key={cat}
-                className={`filter-pill ${category === cat ? 'filter-pill--active' : ''}`}
+                className={`filter-pill ${category === cat ? "filter-pill--active" : ""}`}
                 onClick={() => {
-                  setCategory(category === cat ? '' : cat);
+                  setCategory(category === cat ? "" : cat);
                   setPage(1);
                 }}
               >
@@ -182,79 +183,134 @@ export default function CatalogPage() {
           <p className="empty-state-title">No products found</p>
         </div>
       ) : (
-        <div style={{ overflowX: 'auto' }}>
-          <table className="data-table">
-            <thead>
-              <tr>
-                <th>Name</th>
-                <th>Category</th>
-                <th>Price</th>
-                <th>Stock</th>
-                <th style={{ textAlign: 'right' }}>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {products.map((p) => (
-                <tr key={p.id}>
-                  <td>
+        <>
+          <div className="catalog-table-wrap">
+            <div style={{ overflowX: "auto" }}>
+              <table className="data-table">
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>Category</th>
+                    <th>Price</th>
+                    <th>Stock</th>
+                    <th style={{ textAlign: "right" }}>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {products.map((p) => (
+                    <tr key={p.id}>
+                      <td>
+                        <div className="product-name">{p.name}</div>
+                        {p.description && (
+                          <div className="product-desc">{p.description}</div>
+                        )}
+                      </td>
+                      <td>
+                        <span className="label">{p.category}</span>
+                      </td>
+                      <td>
+                        <span className="data-lg">${p.price.toFixed(2)}</span>
+                      </td>
+                      <td>
+                        {p.stock === 0 ? (
+                          <span className="badge badge-outstock">
+                            Out of stock
+                          </span>
+                        ) : (
+                          <span className="data">{p.stock}</span>
+                        )}
+                      </td>
+                      <td>
+                        <div
+                          style={{
+                            display: "flex",
+                            justifyContent: "flex-end",
+                            gap: 8,
+                          }}
+                        >
+                          <button
+                            onClick={() => navigate(`/products/${p.id}`)}
+                            className="btn btn-ghost btn-sm"
+                          >
+                            View
+                          </button>
+                          {isAdmin && (
+                            <button
+                              onClick={() => navigate(`/products/${p.id}/edit`)}
+                              className="btn btn-ghost btn-sm"
+                            >
+                              Edit
+                            </button>
+                          )}
+                          <button
+                            onClick={() => {
+                              addItem(p);
+                              toast(`${p.name} added to cart`);
+                            }}
+                            disabled={p.stock === 0}
+                            className="btn btn-primary btn-sm"
+                          >
+                            Add to cart
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div className="catalog-cards">
+            {products.map((p) => (
+              <div className="catalog-card" key={p.id}>
+                <div className="catalog-card-header">
+                  <div>
                     <div className="product-name">{p.name}</div>
                     {p.description && (
                       <div className="product-desc">{p.description}</div>
                     )}
-                  </td>
-                  <td>
-                    <span className="label">{p.category}</span>
-                  </td>
-                  <td>
-                    <span className="data-lg">${p.price.toFixed(2)}</span>
-                  </td>
-                  <td>
-                    {p.stock === 0 ? (
-                      <span className="badge badge-outstock">Out of stock</span>
-                    ) : (
-                      <span className="data">{p.stock}</span>
-                    )}
-                  </td>
-                  <td>
-                    <div
-                      style={{
-                        display: 'flex',
-                        justifyContent: 'flex-end',
-                        gap: 8,
-                      }}
+                  </div>
+                  <span className="data-lg">${p.price.toFixed(2)}</span>
+                </div>
+                <div className="catalog-card-meta">
+                  <span className="label">{p.category}</span>
+                  {p.stock === 0 ? (
+                    <span className="badge badge-outstock">Out of stock</span>
+                  ) : (
+                    <span className="data">Stock: {p.stock}</span>
+                  )}
+                </div>
+                <div className="catalog-card-actions">
+                  <button
+                    onClick={() => navigate(`/products/${p.id}`)}
+                    className="btn btn-ghost btn-sm"
+                  >
+                    View
+                  </button>
+                  {isAdmin && (
+                    <button
+                      onClick={() => navigate(`/products/${p.id}/edit`)}
+                      className="btn btn-ghost btn-sm"
                     >
-                      <button
-                        onClick={() =>
-                          navigate(`/products/${p.id}`)
-                        }
-                        className="btn btn-ghost btn-sm"
-                      >
-                        View
-                      </button>
-                      {isAdmin && (
-                        <button
-                          onClick={() =>
-                            navigate(`/products/${p.id}/edit`)
-                          }
-                          className="btn btn-ghost btn-sm"
-                        >
-                          Edit
-                        </button>
-                      )}
-                      <button
-                        onClick={() => { addItem(p); toast(`${p.name} added to cart`); }}
-                        disabled={p.stock === 0}
-                        className="btn btn-primary btn-sm"
-                      >
-                        Add to cart
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+                      Edit
+                    </button>
+                  )}
+                  <button
+                    onClick={() => {
+                      addItem(p);
+                      toast(`${p.name} added to cart`);
+                    }}
+                    disabled={p.stock === 0}
+                    className="btn btn-primary btn-sm"
+                  >
+                    Add to cart
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </>
       )}
 
       {totalPages > 1 && (

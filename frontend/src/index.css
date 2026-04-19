@@ -382,8 +382,13 @@ table.data-table tbody td {
 }
 
 @keyframes pulse-bar {
-  0%, 100% { opacity: 0.3; }
-  50% { opacity: 1; }
+  0%,
+  100% {
+    opacity: 0.3;
+  }
+  50% {
+    opacity: 1;
+  }
 }
 
 /* ── Empty state ── */
@@ -1035,7 +1040,9 @@ hr.divider {
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .payment-disclaimer {
@@ -1061,8 +1068,12 @@ hr.divider {
 }
 
 @keyframes overlay-fade-in {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 .payment-overlay-content {
@@ -1104,7 +1115,9 @@ hr.divider {
   width: 100%;
   opacity: 0;
   transform: translateY(16px);
-  transition: opacity 500ms cubic-bezier(0.4, 0, 0.2, 1), transform 500ms cubic-bezier(0.4, 0, 0.2, 1);
+  transition:
+    opacity 500ms cubic-bezier(0.4, 0, 0.2, 1),
+    transform 500ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .payment-result--visible {
@@ -1180,11 +1193,15 @@ hr.divider {
 }
 
 @keyframes check-circle {
-  to { stroke-dashoffset: 0; }
+  to {
+    stroke-dashoffset: 0;
+  }
 }
 
 @keyframes check-check {
-  to { stroke-dashoffset: 0; }
+  to {
+    stroke-dashoffset: 0;
+  }
 }
 
 /* ── Fail X Animation ── */
@@ -1208,4 +1225,337 @@ hr.divider {
   stroke-dasharray: 56;
   stroke-dashoffset: 56;
   animation: check-check 400ms cubic-bezier(0.4, 0, 0.2, 1) 400ms forwards;
+}
+
+/* ── Nav responsive ── */
+.nav {
+  padding: 0 32px;
+}
+
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.nav-hamburger {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 5px;
+  width: 40px;
+  height: 40px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  margin-left: auto;
+}
+
+.nav-hamburger-bar {
+  width: 22px;
+  height: 2px;
+  background: var(--black);
+  display: block;
+  transition:
+    transform 200ms ease,
+    opacity 200ms ease;
+  transform-origin: center;
+}
+
+.nav-hamburger-bar--rotate-1 {
+  transform: translateY(7px) rotate(45deg);
+}
+
+.nav-hamburger-bar--hide {
+  opacity: 0;
+}
+
+.nav-hamburger-bar--rotate-2 {
+  transform: translateY(-7px) rotate(-45deg);
+}
+
+.nav-mobile-menu {
+  position: sticky;
+  top: var(--nav-height);
+  z-index: 99;
+  background: var(--white);
+  border-bottom: 1px solid var(--gray-200);
+  padding: 8px 16px 16px;
+  display: flex;
+  flex-direction: column;
+}
+
+.nav-mobile-link {
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  padding: 14px 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  border-bottom: 1px solid var(--gray-100);
+  color: var(--gray-500);
+  text-decoration: none;
+  transition: color var(--transition);
+}
+
+.nav-mobile-link:hover,
+.nav-mobile-link.active {
+  color: var(--black);
+}
+
+.nav-mobile-divider {
+  border: none;
+  border-top: 1px solid var(--gray-200);
+  margin: 12px 0;
+}
+
+.nav-mobile-meta {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--gray-400);
+  padding: 4px 0 8px;
+}
+
+.nav-mobile-signout {
+  margin-top: 4px;
+  justify-content: flex-start;
+  padding-left: 0;
+}
+
+/* ── Table scroll wrapper ── */
+.table-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* ── Grid 2 col (collapses on mobile) ── */
+.grid-2col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+/* ── Catalog cards (mobile only) ── */
+.catalog-cards {
+  display: none;
+  flex-direction: column;
+  gap: 1px;
+  background: var(--gray-200);
+  border: 1px solid var(--gray-200);
+}
+
+.catalog-card {
+  background: var(--white);
+  padding: 16px;
+}
+
+.catalog-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.catalog-card-meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--gray-200);
+}
+
+.catalog-card-actions {
+  display: flex;
+  gap: 8px;
+}
+
+/* ── Responsive breakpoints ── */
+
+/* Mobile — max 639px */
+@media (max-width: 639px) {
+  :root {
+    --nav-height: 56px;
+  }
+
+  html {
+    font-size: 16px;
+  }
+
+  .nav {
+    padding: 0 16px;
+  }
+
+  .nav-links {
+    display: none;
+  }
+
+  .nav-hamburger {
+    display: flex;
+  }
+
+  .page {
+    padding: 24px 16px;
+  }
+
+  .page-title {
+    font-size: 32px;
+  }
+
+  .page-header {
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: flex-start;
+  }
+
+  .meta-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .grid-2col {
+    grid-template-columns: 1fr;
+  }
+
+  .login-box {
+    width: 100%;
+    padding: 0 20px;
+  }
+
+  .filter-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .filter-search-wrap {
+    max-width: 100%;
+  }
+
+  .filter-sort-group {
+    width: 100%;
+  }
+
+  .filter-sort-select {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .filter-categories {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .filter-reset {
+    margin-left: 0;
+  }
+
+  .catalog-table-wrap {
+    display: none;
+  }
+
+  .catalog-cards {
+    display: flex;
+  }
+
+  .payment-row {
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .payment-card-field--expiry {
+    flex: none;
+    width: 100%;
+  }
+
+  .payment-form {
+    padding: 20px 16px;
+  }
+
+  .payment-result-page {
+    padding: 48px 16px;
+    align-items: flex-start;
+    padding-top: 60px;
+  }
+
+  .payment-result-title {
+    font-size: 32px;
+  }
+
+  .form-actions {
+    flex-direction: column-reverse;
+  }
+
+  .form-actions .btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  table.data-table thead th,
+  table.data-table tbody td {
+    padding: 10px 12px;
+    font-size: 13px;
+  }
+}
+
+/* Small tablet — 640px to 767px */
+@media (min-width: 640px) and (max-width: 767px) {
+  html {
+    font-size: 18px;
+  }
+
+  .nav {
+    padding: 0 20px;
+  }
+
+  .nav-links {
+    display: none;
+  }
+
+  .nav-hamburger {
+    display: flex;
+  }
+
+  .page {
+    padding: 32px 24px;
+  }
+
+  .page-title {
+    font-size: 36px;
+  }
+
+  .page-header {
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .login-box {
+    width: 100%;
+    max-width: 400px;
+    padding: 0 24px;
+  }
+
+  .filter-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .filter-search-wrap {
+    max-width: 100%;
+  }
+}
+
+/* Tablet — 768px to 1023px */
+@media (min-width: 768px) and (max-width: 1023px) {
+  html {
+    font-size: 20px;
+  }
+
+  .page {
+    padding: 40px 28px;
+  }
 }
