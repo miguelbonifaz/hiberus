@@ -2,7 +2,7 @@
 set -e
 
 if [ ! -f ".env" ]; then
-    echo "APP_ENV=dev" > .env
+    printf "APP_ENV=dev\nDEFAULT_URI=http://localhost:8000\n" > .env
 fi
 
 if [ ! -d "vendor" ]; then
