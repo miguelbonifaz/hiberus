@@ -12,6 +12,7 @@ import ProductFormPage from '@/pages/ProductFormPage';
 import ProductDetailPage from '@/pages/ProductDetailPage';
 import PaymentSuccessPage from '@/pages/PaymentSuccessPage';
 import PaymentFailedPage from '@/pages/PaymentFailedPage';
+import OrderDetailPage from '@/pages/OrderDetailPage';
 
 const router = createBrowserRouter([
   {
@@ -46,6 +47,10 @@ const router = createBrowserRouter([
       {
         path: "/payment/success",
         element: <RequireAuth><PaymentSuccessPage /></RequireAuth>,
+      },
+      {
+        path: "/order",
+        element: <RequireAuth><OrderDetailPage /></RequireAuth>,
       },
       {
         path: "/payment/failed",

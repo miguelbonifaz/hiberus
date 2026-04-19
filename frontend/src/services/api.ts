@@ -34,7 +34,8 @@ export const orderApi = {
   create: (items: { productId: number; quantity: number }[]) =>
     api.post('/api/orders', { items }),
   get: (id: number) => api.get(`/api/orders/${id}`),
-  checkout: (id: number) => api.post(`/api/orders/${id}/checkout`),
+  checkout: (id: number, forceFail = false) =>
+    api.post(`/api/orders/${id}/checkout`, {}, { headers: forceFail ? { 'X-Force-Fail': 'true' } : {} }),
 };
 
 export default api;

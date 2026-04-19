@@ -4,8 +4,10 @@ namespace App\Controller;
 
 use App\Entity\Order;
 use App\Entity\OrderItem;
+use App\Entity\Product;
 use App\Repository\OrderRepository;
 use App\Repository\ProductRepository;
+use Doctrine\DBAL\LockMode;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -37,44 +39,58 @@ class OrderController extends AbstractController
         $order = new Order;
         $order->setCustomerId($customerId);
 
-        foreach ($data['items'] as $itemData) {
-            $product = $this->productRepo->find($itemData['productId'] ?? 0);
-            if (! $product) {
-                return new JsonResponse(['error' => sprintf('Product %d not found.', $itemData['productId'] ?? 0)], Response::HTTP_NOT_FOUND);
+        $this->em->beginTransaction();
+        try {
+            foreach ($data['items'] as $itemData) {
+                $product = $this->em->find(Product::class, $itemData['productId'] ?? 0, LockMode::PESSIMISTIC_WRITE);
+                if (! $product) {
+                    $this->em->rollback();
+
+                    return new JsonResponse(['error' => sprintf('Product %d not found.', $itemData['productId'] ?? 0)], Response::HTTP_NOT_FOUND);
+                }
+
+                $quantity = $itemData['quantity'] ?? 0;
+                if ($quantity <= 0) {
+                    $this->em->rollback();
+
+                    return new JsonResponse(['error' => 'Quantity must be greater than 0.'], Response::HTTP_BAD_REQUEST);
+                }
+
+                if ($product->getStock() < $quantity) {
+                    $this->em->rollback();
+
+                    return new JsonResponse(['error' => sprintf('Insufficient stock for product "%s". Available: %d', $product->getName(), $product->getStock())], Response::HTTP_BAD_REQUEST);
+                }
+
+                $orderItem = new OrderItem;
+                $orderItem->setProduct($product);
+                $orderItem->setQuantity($quantity);
+                $orderItem->setUnitPrice($product->getPrice());
+                $order->addItem($orderItem);
+
+                $product->setStock($product->getStock() - $quantity);
             }
 
-            $quantity = $itemData['quantity'] ?? 0;
-            if ($quantity <= 0) {
-                return new JsonResponse(['error' => 'Quantity must be greater than 0.'], Response::HTTP_BAD_REQUEST);
+            $order->recalculateTotal();
+
+            $errors = $this->validator->validate($order);
+            if (count($errors) > 0) {
+                $this->em->rollback();
+                $violations = [];
+                foreach ($errors as $error) {
+                    $violations[$error->getPropertyPath()] = $error->getMessage();
+                }
+
+                return new JsonResponse(['errors' => $violations], Response::HTTP_BAD_REQUEST);
             }
 
-            if ($product->getStock() < $quantity) {
-                return new JsonResponse(['error' => sprintf('Insufficient stock for product "%s". Available: %d', $product->getName(), $product->getStock())], Response::HTTP_BAD_REQUEST);
-            }
-
-            $orderItem = new OrderItem;
-            $orderItem->setProduct($product);
-            $orderItem->setQuantity($quantity);
-            $orderItem->setUnitPrice($product->getPrice());
-            $order->addItem($orderItem);
-
-            $product->setStock($product->getStock() - $quantity);
+            $this->em->persist($order);
+            $this->em->flush();
+            $this->em->commit();
+        } catch (\Throwable $e) {
+            $this->em->rollback();
+            throw $e;
         }
-
-        $order->recalculateTotal();
-
-        $errors = $this->validator->validate($order);
-        if (count($errors) > 0) {
-            $violations = [];
-            foreach ($errors as $error) {
-                $violations[$error->getPropertyPath()] = $error->getMessage();
-            }
-
-            return new JsonResponse(['errors' => $violations], Response::HTTP_BAD_REQUEST);
-        }
-
-        $this->em->persist($order);
-        $this->em->flush();
 
         return new JsonResponse($order->toArray(), Response::HTTP_CREATED);
     }
@@ -114,7 +130,8 @@ class OrderController extends AbstractController
             return new JsonResponse(['error' => sprintf('Order cannot be checked out. Current status: %s', $order->getStatus())], Response::HTTP_BAD_REQUEST);
         }
 
-        $paymentSuccess = rand(1, 10) > 2;
+        $forceFail = $request->headers->get('X-Force-Fail', false);
+        $paymentSuccess = !$forceFail && rand(1, 10) > 2;
 
         if ($paymentSuccess) {
             $order->setStatus(Order::STATUS_PAID);
@@ -128,6 +145,10 @@ class OrderController extends AbstractController
         }
 
         $order->setStatus(Order::STATUS_FAILED);
+        foreach ($order->getItems() as $item) {
+            $product = $item->getProduct();
+            $product->setStock($product->getStock() + $item->getQuantity());
+        }
         $this->em->flush();
 
         return new JsonResponse([

@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useNavigate } from "react-router";
+import { useEffect, useState } from "react";
+import { useNavigate, useSearchParams } from "react-router";
 import { useAuth } from '@/context/AuthContext';
 import { orderApi } from '@/services/api';
 import PaymentForm from '@/components/PaymentForm';
@@ -8,19 +8,25 @@ import type { Order } from '@/types';
 export default function OrderDetailPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const [orderId, setOrderId] = useState("");
+  const [searchParams] = useSearchParams();
+  const [orderIdInput, setOrderIdInput] = useState("");
   const [order, setOrder] = useState<Order | null>(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [processing, setProcessing] = useState(false);
 
-  const handleSearch = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!orderId || !user) return;
+  const urlOrderId = searchParams.get('orderId');
+
+  useEffect(() => {
+    if (urlOrderId) fetchOrder(parseInt(urlOrderId));
+  }, [urlOrderId]);
+
+  const fetchOrder = async (id: number) => {
+    if (!user) return;
     setLoading(true);
     setError("");
     try {
-      const res = await orderApi.get(parseInt(orderId));
+      const res = await orderApi.get(id);
       setOrder(res.data);
     } catch (err: any) {
       setError(err.response?.data?.error || "Order not found");
@@ -30,12 +36,18 @@ export default function OrderDetailPage() {
     }
   };
 
-  const handlePayment = async () => {
+  const handleSearch = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!orderIdInput || !user) return;
+    fetchOrder(parseInt(orderIdInput));
+  };
+
+  const handlePayment = async (forceFail = false) => {
     if (!order) return;
     setProcessing(true);
     setError("");
     try {
-      const res = await orderApi.checkout(order.id);
+      const res = await orderApi.checkout(order.id, forceFail);
       const paidOrder = res.data.order;
       navigate(
         `/payment/success?orderId=${paidOrder.id}&total=${paidOrder.total}`,
@@ -71,25 +83,27 @@ export default function OrderDetailPage() {
 
       <div className="page" style={{ maxWidth: 640 }}>
         <div className="page-header">
-          <h1 className="page-title">Orders</h1>
+          <h1 className="page-title">{urlOrderId ? 'Retry Payment' : 'Orders'}</h1>
         </div>
 
-        <form
-          onSubmit={handleSearch}
-          style={{ display: "flex", gap: 12, marginBottom: 40 }}
-        >
-          <input
-            className="input"
-            type="number"
-            placeholder="Order ID"
-            value={orderId}
-            onChange={(e) => setOrderId(e.target.value)}
-            style={{ flex: 1, maxWidth: 240 }}
-          />
-          <button type="submit" disabled={loading} className="btn btn-primary">
-            {loading ? "..." : "Search"}
-          </button>
-        </form>
+        {!urlOrderId && (
+          <form
+            onSubmit={handleSearch}
+            style={{ display: "flex", gap: 12, marginBottom: 40 }}
+          >
+            <input
+              className="input"
+              type="number"
+              placeholder="Order ID"
+              value={orderIdInput}
+              onChange={(e) => setOrderIdInput(e.target.value)}
+              style={{ flex: 1, maxWidth: 240 }}
+            />
+            <button type="submit" disabled={loading} className="btn btn-primary">
+              {loading ? "..." : "Search"}
+            </button>
+          </form>
+        )}
 
         {error && (
           <div className="error-msg" style={{ marginBottom: 24 }}>
@@ -176,10 +190,19 @@ export default function OrderDetailPage() {
                   Payment Method
                 </h2>
                 <PaymentForm
-                  onSubmit={handlePayment}
+                  onSubmit={() => handlePayment()}
                   loading={loading}
                   disabled={processing}
                 />
+                <button
+                  type="button"
+                  onClick={() => handlePayment(true)}
+                  disabled={processing}
+                  className="btn btn-ghost btn-block"
+                  style={{ marginTop: 8, fontSize: 12, opacity: 0.6 }}
+                >
+                  Simulate Failed Payment (dev)
+                </button>
               </>
             )}
 

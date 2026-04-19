@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router';
+import { Navigate, useNavigate } from 'react-router';
 import { useAuth } from '@/context/AuthContext';
 import { useCart } from '@/context/CartContext';
 import { orderApi } from '@/services/api';
@@ -30,12 +30,12 @@ export default function CheckoutPage() {
     }
   };
 
-  const handlePayment = async () => {
+  const handlePayment = async (forceFail = false) => {
     if (!order) return;
     setProcessing(true);
     setError('');
     try {
-      const res = await orderApi.checkout(order.id);
+      const res = await orderApi.checkout(order.id, forceFail);
       const paidOrder = res.data.order;
       navigate(`/payment/success?orderId=${paidOrder.id}&total=${paidOrder.total}`, { replace: true });
     } catch (err: any) {
@@ -46,7 +46,7 @@ export default function CheckoutPage() {
     }
   };
 
-  if (!user) { navigate('/login'); return null; }
+  if (!user) return <Navigate to="/login" replace />;
 
   return (
     <>
@@ -116,7 +116,16 @@ export default function CheckoutPage() {
             {error && <div className="error-msg">{error}</div>}
 
             <h2 className="label label-xs" style={{ marginBottom: 8 }}>Payment Method</h2>
-            <PaymentForm onSubmit={handlePayment} loading={loading} disabled={processing} />
+            <PaymentForm onSubmit={() => handlePayment()} loading={loading} disabled={processing} />
+            <button
+              type="button"
+              onClick={() => handlePayment(true)}
+              disabled={processing}
+              className="btn btn-ghost btn-block"
+              style={{ marginTop: 8, fontSize: 12, opacity: 0.6 }}
+            >
+              Simulate Failed Payment (dev)
+            </button>
           </>
         )}
       </div>

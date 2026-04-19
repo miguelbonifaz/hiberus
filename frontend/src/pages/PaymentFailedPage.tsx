@@ -39,7 +39,7 @@ export default function PaymentFailedPage() {
         </p>
 
         <button
-          onClick={() => navigate(orderId ? `/order` : '/catalog')}
+          onClick={() => navigate(orderId ? `/order?orderId=${orderId}` : '/catalog')}
           className="btn btn-primary btn-block"
           style={{ marginTop: 32 }}
         >
