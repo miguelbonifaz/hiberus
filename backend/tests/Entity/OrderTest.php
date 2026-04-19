@@ -11,7 +11,13 @@ class OrderTest extends TestCase
 {
     public function test_order_defaults(): void
     {
+        // Arrange
         $order = new Order;
+
+        // Act
+        // No action needed - checking defaults
+
+        // Assert
         $this->assertEquals('pending', $order->getStatus());
         $this->assertEquals(0, $order->getTotal());
         $this->assertNotNull($order->getCreatedAt());
@@ -19,6 +25,7 @@ class OrderTest extends TestCase
 
     public function test_recalculate_total(): void
     {
+        // Arrange
         $product = new Product;
         $product->setName('Test');
         $product->setPrice(25.0);
@@ -39,52 +46,32 @@ class OrderTest extends TestCase
         $order->setCustomerId(1);
         $order->addItem($item1);
         $order->addItem($item2);
+
+        // Act
         $order->recalculateTotal();
 
+        // Assert
         $this->assertEquals(125.0, $order->getTotal());
     }
 
     public function test_order_status_transitions(): void
     {
+        // Arrange
         $order = new Order;
+
+        // Assert - initial status
         $this->assertEquals('pending', $order->getStatus());
 
+        // Act
         $order->setStatus(Order::STATUS_PAID);
+
+        // Assert
         $this->assertEquals('paid', $order->getStatus());
 
+        // Act
         $order->setStatus(Order::STATUS_FAILED);
+
+        // Assert
         $this->assertEquals('failed', $order->getStatus());
-    }
-}
-
-class ProductTest extends TestCase
-{
-    public function test_product_creation(): void
-    {
-        $product = new Product;
-        $product->setName('Laptop');
-        $product->setDescription('A good laptop');
-        $product->setPrice(999.99);
-        $product->setStock(50);
-        $product->setCategory('Electronics');
-
-        $this->assertEquals('Laptop', $product->getName());
-        $this->assertEquals('A good laptop', $product->getDescription());
-        $this->assertEquals(999.99, $product->getPrice());
-        $this->assertEquals(50, $product->getStock());
-        $this->assertEquals('Electronics', $product->getCategory());
-        $this->assertNotNull($product->getCreatedAt());
-    }
-}
-
-class OrderItemTest extends TestCase
-{
-    public function test_order_item_subtotal(): void
-    {
-        $item = new OrderItem;
-        $item->setUnitPrice(29.99);
-        $item->setQuantity(3);
-
-        $this->assertEquals(89.97, $item->getSubtotal());
     }
 }

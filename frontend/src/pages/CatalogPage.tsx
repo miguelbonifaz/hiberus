@@ -223,6 +223,14 @@ export default function CatalogPage() {
                         gap: 8,
                       }}
                     >
+                      <button
+                        onClick={() =>
+                          navigate(`/products/${p.id}`)
+                        }
+                        className="btn btn-ghost btn-sm"
+                      >
+                        View
+                      </button>
                       {isAdmin && (
                         <button
                           onClick={() =>
