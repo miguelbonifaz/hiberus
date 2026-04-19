@@ -137,14 +137,6 @@ npm install
 npm run dev
 ```
 
-## Casos de Uso Implementados
-
-- **UC-P01**: Listar productos con paginación, búsqueda y ordenamiento
-- **UC-P02**: Crear producto (solo Admin simulado)
-- **UC-O01**: Crear pedido validando stock y calculando totales
-- **UC-O02**: Ver detalle de pedido validando pertenencia
-- **UC-O03**: Checkout simulado (80% probabilidad de éxito)
-
 ## Stack
 
 - **Backend**: PHP 8.2, Symfony 7, Doctrine ORM, PostgreSQL 16
