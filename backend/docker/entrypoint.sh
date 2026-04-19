@@ -1,6 +1,10 @@
 #!/bin/bash
 set -e
 
+if [ ! -f ".env" ]; then
+    echo "APP_ENV=dev" > .env
+fi
+
 if [ ! -d "vendor" ]; then
     echo "Installing dependencies..."
     composer install --no-interaction --optimize-autoloader
