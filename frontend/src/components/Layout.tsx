@@ -1,59 +1,40 @@
-import { Link, Outlet, useNavigate } from 'react-router';
+import { Link, Outlet, useNavigate, useLocation } from 'react-router';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
-import { ShoppingCart, Package, LogOut } from 'lucide-react';
 
 export default function Layout() {
   const { user, logout } = useAuth();
   const { count } = useCart();
   const navigate = useNavigate();
+  const location = useLocation();
 
-  const handleLogout = () => {
-    logout();
-    navigate('/login');
-  };
+  const handleLogout = () => { logout(); navigate('/login'); };
 
-  if (!user) {
-    return <Outlet />;
-  }
+  if (!user) return <Outlet />;
+
+  const isActive = (path: string) => location.pathname.startsWith(path);
 
   return (
-    <div style={{ minHeight: '100vh' }}>
+    <div style={{ minHeight: '100vh', background: 'var(--white)' }}>
       <nav style={{
-        background: '#1e293b', color: 'white', padding: '0 24px',
-        display: 'flex', alignItems: 'center', height: 56, gap: 24,
+        position: 'sticky', top: 0, zIndex: 100,
+        background: 'var(--white)', borderBottom: '1px solid var(--gray-200)',
+        height: 'var(--nav-height)', display: 'flex', alignItems: 'center', padding: '0 32px',
       }}>
-        <Link to="/catalog" style={{ color: 'white', fontWeight: 700, fontSize: 18, textDecoration: 'none' }}>
-          Hiberus Shop
-        </Link>
-        <div style={{ display: 'flex', gap: 16, marginLeft: 'auto', alignItems: 'center' }}>
-          <Link to="/catalog" style={{ color: '#e2e8f0', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 4 }}>
-            <Package size={18} /> Catalog
+        <Link to="/catalog" className="wordmark">Hiberus</Link>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+          <Link to="/catalog" className={`nav-link ${isActive('/catalog') ? 'active' : ''}`}>Catalog</Link>
+          <Link to="/cart" className={`nav-link ${isActive('/cart') ? 'active' : ''}`}>
+            Cart{count > 0 && <span className="cart-count">{count}</span>}
           </Link>
-          <Link to="/cart" style={{ color: '#e2e8f0', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 4, position: 'relative' }}>
-            <ShoppingCart size={18} /> Cart
-            {count > 0 && (
-              <span style={{
-                position: 'absolute', top: -8, right: -12,
-                background: '#ef4444', borderRadius: '50%', width: 18, height: 18,
-                fontSize: 11, display: 'flex', alignItems: 'center', justifyContent: 'center',
-              }}>
-                {count}
-              </span>
-            )}
-          </Link>
-          <Link to="/order" style={{ color: '#e2e8f0', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 4 }}>
-            <Package size={18} /> Orders
-          </Link>
-          <span style={{ color: '#94a3b8', fontSize: 13 }}>#{user.id} ({user.role})</span>
-          <button onClick={handleLogout} style={{ background: 'none', border: 'none', color: '#e2e8f0', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 }}>
-            <LogOut size={18} /> Logout
-          </button>
+          <Link to="/order" className={`nav-link ${isActive('/order') ? 'active' : ''}`}>Orders</Link>
+          <div className="nav-sep" />
+          <span className="nav-meta">#{user.id} · {user.role}</span>
+          <button onClick={handleLogout} className="btn btn-ghost btn-sm">Sign out</button>
         </div>
       </nav>
-      <main style={{ maxWidth: 960, margin: '0 auto', padding: 24 }}>
-        <Outlet />
-      </main>
+      <main><Outlet /></main>
     </div>
   );
 }

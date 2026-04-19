@@ -18,12 +18,16 @@ export interface ProductListParams {
   page?: number;
   sort?: string;
   direction?: string;
+  category?: string;
 }
 
 export const productApi = {
   list: (params?: ProductListParams) => api.get('/api/products', { params }),
+  get: (id: number) => api.get(`/api/products/${id}`),
   create: (data: { name: string; description?: string; price: number; stock: number; category: string }) =>
     api.post('/api/products', data),
+  update: (id: number, data: { name?: string; description?: string; price?: number; stock?: number; category?: string }) =>
+    api.put(`/api/products/${id}`, data),
 };
 
 export const orderApi = {

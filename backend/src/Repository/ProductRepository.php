@@ -16,13 +16,18 @@ class ProductRepository extends ServiceEntityRepository
         parent::__construct($registry, Product::class);
     }
 
-    public function findPaginated(string $search = '', int $page = 1, int $limit = 10, string $sort = 'id', string $direction = 'ASC'): array
+    public function findPaginated(string $search = '', int $page = 1, int $limit = 10, string $sort = 'id', string $direction = 'ASC', ?string $category = null): array
     {
         $qb = $this->createQueryBuilder('p');
 
         if ($search !== '') {
             $qb->andWhere('p.name LIKE :search OR p.description LIKE :search OR p.category LIKE :search')
                 ->setParameter('search', '%'.$search.'%');
+        }
+
+        if ($category !== null && $category !== '') {
+            $qb->andWhere('p.category = :category')
+                ->setParameter('category', $category);
         }
 
         $countQb = clone $qb;

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router';
 import { useAuth } from '../context/AuthContext';
 import { orderApi } from '../services/api';
+import PaymentForm from '../components/PaymentForm';
 import type { Order } from '../types';
 
 export default function OrderDetailPage() {
@@ -11,6 +12,7 @@ export default function OrderDetailPage() {
   const [order, setOrder] = useState<Order | null>(null);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [processing, setProcessing] = useState(false);
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -28,76 +30,124 @@ export default function OrderDetailPage() {
     }
   };
 
-  const handleCheckout = async () => {
+  const handlePayment = async () => {
     if (!order) return;
-    setLoading(true);
+    setProcessing(true);
+    setError('');
     try {
       const res = await orderApi.checkout(order.id);
-      setOrder(res.data.order);
+      const paidOrder = res.data.order;
+      navigate(`/payment/success?orderId=${paidOrder.id}&total=${paidOrder.total}`, { replace: true });
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Payment failed');
-      if (err.response?.data?.order) setOrder(err.response.data.order);
+      const failedOrder = err.response?.data?.order;
+      navigate(`/payment/failed?orderId=${order.id}${failedOrder ? `&total=${failedOrder.total}` : ''}`, { replace: true });
     } finally {
-      setLoading(false);
+      setProcessing(false);
     }
   };
 
+  const statusClass: Record<string, string> = {
+    paid: 'badge-paid', pending: 'badge-pending', failed: 'badge-failed',
+  };
+
   return (
-    <div style={{ maxWidth: 600, margin: '0 auto', padding: 24 }}>
-      <h1>Order Detail</h1>
-      <form onSubmit={handleSearch} style={{ display: 'flex', gap: 8, marginBottom: 24 }}>
-        <input
-          type="number"
-          placeholder="Order ID"
-          value={orderId}
-          onChange={(e) => setOrderId(e.target.value)}
-          style={{ flex: 1, padding: 8, border: '1px solid #ccc', borderRadius: 4 }}
-        />
-        <button type="submit" disabled={loading} style={{ padding: '8px 16px', background: '#2563eb', color: 'white', border: 'none', borderRadius: 4, cursor: 'pointer' }}>
-          Search
-        </button>
-      </form>
-
-      {error && <p style={{ color: 'red' }}>{error}</p>}
-
-      {order && (
-        <div style={{ border: '1px solid #e2e8f0', borderRadius: 4, padding: 16 }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 12 }}>
-            <strong>Order #{order.id}</strong>
-            <span style={{
-              padding: '4px 8px', borderRadius: 4,
-              background: order.status === 'paid' ? '#dcfce7' : order.status === 'failed' ? '#fee2e2' : '#fef3c7',
-              fontWeight: 600, textTransform: 'uppercase', fontSize: 13,
-            }}>
-              {order.status}
-            </span>
+    <>
+      {processing && (
+        <div className="payment-overlay">
+          <div className="payment-overlay-content">
+            <div className="payment-overlay-spinner" />
+            <span className="payment-overlay-text">Processing payment...</span>
           </div>
-          <p>Customer ID: {order.customerId}</p>
-          <p>Total: ${order.total.toFixed(2)}</p>
-          <p>Created: {new Date(order.createdAt).toLocaleString()}</p>
-          {order.paidAt && <p>Paid: {new Date(order.paidAt).toLocaleString()}</p>}
-
-          <h4 style={{ marginTop: 16 }}>Items</h4>
-          <ul style={{ listStyle: 'none', padding: 0 }}>
-            {order.items.map((i) => (
-              <li key={i.id} style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', borderBottom: '1px solid #f1f5f9' }}>
-                <span>{i.product.name} x {i.quantity}</span>
-                <span>${i.subtotal.toFixed(2)}</span>
-              </li>
-            ))}
-          </ul>
-
-          {order.status === 'pending' && (
-            <button onClick={handleCheckout} disabled={loading} style={{ width: '100%', marginTop: 12, padding: 10, background: '#2563eb', color: 'white', border: 'none', borderRadius: 4, cursor: 'pointer', fontWeight: 600 }}>
-              {loading ? 'Processing...' : 'Pay Now'}
-            </button>
-          )}
         </div>
       )}
 
-      <button onClick={() => navigate('/catalog')} style={{ marginTop: 16, padding: '8px 16px', background: 'white', border: '1px solid #ccc', borderRadius: 4, cursor: 'pointer' }}>
-        Back to Catalog
-      </button>
-    </div>
+      <div className="page" style={{ maxWidth: 640 }}>
+        <div className="page-header">
+          <h1 className="page-title">Orders</h1>
+        </div>
+
+        <form onSubmit={handleSearch} style={{ display: 'flex', gap: 12, marginBottom: 40 }}>
+          <input
+            className="input"
+            type="number"
+            placeholder="Order ID"
+            value={orderId}
+            onChange={(e) => setOrderId(e.target.value)}
+            style={{ flex: 1, maxWidth: 240 }}
+          />
+          <button type="submit" disabled={loading} className="btn btn-primary">
+            {loading ? '...' : 'Search'}
+          </button>
+        </form>
+
+        {error && <div className="error-msg" style={{ marginBottom: 24 }}>{error}</div>}
+
+        {order && (
+          <div>
+            <div className="order-header">
+              <div>
+                <div className="label label-xs" style={{ marginBottom: 4 }}>ORDER #{order.id}</div>
+                <div style={{ fontFamily: 'var(--font-display)', fontSize: 28, fontWeight: 400 }}>
+                  ${order.total.toFixed(2)}
+                </div>
+              </div>
+              <span className={`badge ${statusClass[order.status] ?? ''}`}>{order.status}</span>
+            </div>
+
+            <div className="meta-grid" style={{ marginBottom: 24 }}>
+              <div>
+                <div className="meta-label">Customer</div>
+                <div className="meta-value">#{order.customerId}</div>
+              </div>
+              <div>
+                <div className="meta-label">Created</div>
+                <div className="meta-value">{new Date(order.createdAt).toLocaleString()}</div>
+              </div>
+              {order.paidAt && (
+                <div>
+                  <div className="meta-label">Paid</div>
+                  <div className="meta-value">{new Date(order.paidAt).toLocaleString()}</div>
+                </div>
+              )}
+            </div>
+
+            <table className="data-table">
+              <thead>
+                <tr>
+                  <th>Product</th>
+                  <th>Qty</th>
+                  <th>Unit price</th>
+                  <th style={{ textAlign: 'right' }}>Subtotal</th>
+                </tr>
+              </thead>
+              <tbody>
+                {order.items.map((i) => (
+                  <tr key={i.id}>
+                    <td style={{ fontWeight: 600 }}>{i.product.name}</td>
+                    <td><span className="data">{i.quantity}</span></td>
+                    <td><span className="data">${i.unitPrice.toFixed(2)}</span></td>
+                    <td style={{ textAlign: 'right' }}><span className="data">${i.subtotal.toFixed(2)}</span></td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+
+            {(order.status === 'pending' || order.status === 'failed') && (
+              <>
+                <hr className="divider" />
+                <h2 className="label label-xs" style={{ marginBottom: 8 }}>Payment Method</h2>
+                <PaymentForm onSubmit={handlePayment} loading={loading} disabled={processing} />
+              </>
+            )}
+
+            {order.status === 'paid' && (
+              <div style={{ marginTop: 24, padding: '16px 20px', border: '1px solid var(--black)', background: 'var(--gray-100)' }}>
+                <span className="label label-xs" style={{ color: 'var(--black)' }}>Payment confirmed</span>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    </>
   );
 }

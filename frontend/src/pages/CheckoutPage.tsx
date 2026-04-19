@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 import { orderApi } from '../services/api';
+import PaymentForm from '../components/PaymentForm';
 import type { Order } from '../types';
 
 export default function CheckoutPage() {
@@ -10,6 +11,7 @@ export default function CheckoutPage() {
   const { items, total, clearCart } = useCart();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const [processing, setProcessing] = useState(false);
   const [order, setOrder] = useState<Order | null>(null);
   const [error, setError] = useState('');
 
@@ -28,100 +30,96 @@ export default function CheckoutPage() {
     }
   };
 
-  const handleCheckout = async () => {
+  const handlePayment = async () => {
     if (!order) return;
-    setLoading(true);
+    setProcessing(true);
     setError('');
     try {
       const res = await orderApi.checkout(order.id);
-      setOrder(res.data.order);
+      const paidOrder = res.data.order;
+      navigate(`/payment/success?orderId=${paidOrder.id}&total=${paidOrder.total}`, { replace: true });
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Payment failed');
-      if (err.response?.data?.order) {
-        setOrder(err.response.data.order);
-      }
+      const failedOrder = err.response?.data?.order;
+      navigate(`/payment/failed?orderId=${order.id}${failedOrder ? `&total=${failedOrder.total}` : ''}`, { replace: true });
     } finally {
-      setLoading(false);
+      setProcessing(false);
     }
   };
 
-  if (!user) {
-    navigate('/login');
-    return null;
-  }
+  if (!user) { navigate('/login'); return null; }
 
   return (
-    <div style={{ maxWidth: 600, margin: '0 auto', padding: 24 }}>
-      <h1>Checkout</h1>
-
-      {!order ? (
-        <>
-          <h3>Order Summary</h3>
-          <ul style={{ listStyle: 'none', padding: 0 }}>
-            {items.map((i) => (
-              <li key={i.product.id} style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid #e2e8f0' }}>
-                <span>{i.product.name} x {i.quantity}</span>
-                <span>${(i.product.price * i.quantity).toFixed(2)}</span>
-              </li>
-            ))}
-          </ul>
-          <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 700, fontSize: 18, marginTop: 8 }}>
-            <span>Total</span>
-            <span>${total.toFixed(2)}</span>
+    <>
+      {processing && (
+        <div className="payment-overlay">
+          <div className="payment-overlay-content">
+            <div className="payment-overlay-spinner" />
+            <span className="payment-overlay-text">Processing payment...</span>
           </div>
-          {error && <p style={{ color: 'red' }}>{error}</p>}
-          <button
-            onClick={handleCreateOrder}
-            disabled={loading || items.length === 0}
-            style={btnStyle}
-          >
-            {loading ? 'Creating...' : 'Create Order'}
-          </button>
-        </>
-      ) : (
-        <>
-          <div style={{ background: order.status === 'paid' ? '#dcfce7' : order.status === 'failed' ? '#fee2e2' : '#fef3c7', padding: 16, borderRadius: 4, marginBottom: 16 }}>
-            <p style={{ margin: 0, fontWeight: 600 }}>
-              Order #{order.id} — Status: <span style={{ textTransform: 'uppercase' }}>{order.status}</span>
-            </p>
-            <p style={{ margin: '4px 0 0' }}>Total: ${order.total.toFixed(2)}</p>
-          </div>
-
-          <h3>Items</h3>
-          <ul style={{ listStyle: 'none', padding: 0 }}>
-            {order.items.map((i) => (
-              <li key={i.id} style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid #e2e8f0' }}>
-                <span>{i.product.name} x {i.quantity}</span>
-                <span>${i.subtotal.toFixed(2)}</span>
-              </li>
-            ))}
-          </ul>
-
-          {error && <p style={{ color: 'red' }}>{error}</p>}
-
-          {order.status === 'pending' && (
-            <button onClick={handleCheckout} disabled={loading} style={btnStyle}>
-              {loading ? 'Processing...' : 'Pay Now (Simulated)'}
-            </button>
-          )}
-          {order.status === 'failed' && (
-            <button onClick={handleCheckout} disabled={loading} style={btnStyle}>
-              {loading ? 'Processing...' : 'Retry Payment'}
-            </button>
-          )}
-          {order.status === 'paid' && (
-            <button onClick={() => navigate('/catalog')} style={{ ...btnStyle, background: '#16a34a' }}>
-              Continue Shopping
-            </button>
-          )}
-        </>
+        </div>
       )}
-    </div>
+
+      <div className="page" style={{ maxWidth: 600 }}>
+        <div className="page-header">
+          <h1 className="page-title">Checkout</h1>
+          {order && (
+            <span className="data">Order #{order.id}</span>
+          )}
+        </div>
+
+        {!order ? (
+          <>
+            <h2 className="label label-xs" style={{ marginBottom: 16 }}>Order Summary</h2>
+            <div style={{ border: '1px solid var(--gray-200)' }}>
+              {items.map((i) => (
+                <div key={i.product.id} className="order-line">
+                  <div>
+                    <span style={{ fontWeight: 600, fontSize: 14 }}>{i.product.name}</span>
+                    <span className="data" style={{ fontSize: 12, color: 'var(--gray-400)', marginLeft: 8 }}>
+                      × {i.quantity}
+                    </span>
+                  </div>
+                  <span className="data-lg">${(i.product.price * i.quantity).toFixed(2)}</span>
+                </div>
+              ))}
+              <div className="total-row total-row-sm">
+                <span className="label">Total</span>
+                <span style={{ fontFamily: 'var(--font-display)', fontSize: 28, fontWeight: 400 }}>${total.toFixed(2)}</span>
+              </div>
+            </div>
+
+            {error && <div className="error-msg">{error}</div>}
+            <button
+              onClick={handleCreateOrder}
+              disabled={loading || items.length === 0}
+              className="btn btn-primary btn-block"
+              style={{ marginTop: 20 }}
+            >
+              {loading ? 'Creating...' : 'Continue to Payment'}
+            </button>
+          </>
+        ) : (
+          <>
+            <div style={{ border: '1px solid var(--gray-200)', padding: 20, marginBottom: 24 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 12 }}>
+                <span className="label label-xs">ORDER #{order.id}</span>
+                <span className="data">${order.total.toFixed(2)}</span>
+              </div>
+              {order.items.map((i) => (
+                <div key={i.id} style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid var(--gray-200)', fontSize: 14 }}>
+                  <span>{i.product.name} <span className="data" style={{ fontSize: 12, color: 'var(--gray-400)' }}>× {i.quantity}</span></span>
+                  <span className="data">${i.subtotal.toFixed(2)}</span>
+                </div>
+              ))}
+            </div>
+
+            {error && <div className="error-msg">{error}</div>}
+
+            <h2 className="label label-xs" style={{ marginBottom: 8 }}>Payment Method</h2>
+            <PaymentForm onSubmit={handlePayment} loading={loading} disabled={processing} />
+          </>
+        )}
+      </div>
+    </>
   );
 }
-
-const btnStyle: React.CSSProperties = {
-  width: '100%', marginTop: 16, padding: '12px',
-  background: '#2563eb', color: 'white', border: 'none', borderRadius: 4,
-  cursor: 'pointer', fontWeight: 600, fontSize: 16,
-};
