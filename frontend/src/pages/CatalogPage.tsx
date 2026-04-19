@@ -1,12 +1,12 @@
 import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router";
-import { useAuth } from "../context/AuthContext";
-import { useCart } from "../context/CartContext";
-import { useToast } from "../context/ToastContext";
-import { productApi } from "../services/api";
-import type { Product, PaginatedResponse } from "../types";
+import { useAuth } from '@/context/AuthContext';
+import { useCart } from '@/context/CartContext';
+import { useToast } from '@/context/ToastContext';
+import { productApi } from '@/services/api';
+import { CATEGORIES } from '@/constants';
+import type { Product, PaginatedResponse } from '@/types';
 
-const CATEGORIES = ["Electronics", "Accessories", "Furniture"] as const;
 const SORT_OPTIONS = [
   { value: "id", label: "Default" },
   { value: "name", label: "Name" },

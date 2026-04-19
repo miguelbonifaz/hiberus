@@ -1,17 +1,17 @@
 import { createBrowserRouter, RouterProvider } from "react-router";
-import { AuthProvider } from "./context/AuthContext";
-import { RequireAuth, RequireAdmin } from "./context/AuthContext";
-import { CartProvider } from "./context/CartContext";
-import { ToastProvider } from "./context/ToastContext";
-import Layout from "./components/Layout";
-import LoginPage from "./pages/LoginPage";
-import CatalogPage from "./pages/CatalogPage";
-import CartPage from "./pages/CartPage";
-import CheckoutPage from "./pages/CheckoutPage";
-import ProductFormPage from "./pages/ProductFormPage";
-import ProductDetailPage from "./pages/ProductDetailPage";
-import PaymentSuccessPage from "./pages/PaymentSuccessPage";
-import PaymentFailedPage from "./pages/PaymentFailedPage";
+import { AuthProvider } from '@/context/AuthContext';
+import { RequireAuth, RequireAdmin } from '@/context/AuthContext';
+import { CartProvider } from '@/context/CartContext';
+import { ToastProvider } from '@/context/ToastContext';
+import Layout from '@/components/Layout';
+import LoginPage from '@/pages/LoginPage';
+import CatalogPage from '@/pages/CatalogPage';
+import CartPage from '@/pages/CartPage';
+import CheckoutPage from '@/pages/CheckoutPage';
+import ProductFormPage from '@/pages/ProductFormPage';
+import ProductDetailPage from '@/pages/ProductDetailPage';
+import PaymentSuccessPage from '@/pages/PaymentSuccessPage';
+import PaymentFailedPage from '@/pages/PaymentFailedPage';
 
 const router = createBrowserRouter([
   {

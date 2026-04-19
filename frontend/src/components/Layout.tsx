@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, Outlet, useNavigate, useLocation } from "react-router";
-import { useAuth } from "../context/AuthContext";
-import { useCart } from "../context/CartContext";
+import { useAuth } from '@/context/AuthContext';
+import { useCart } from '@/context/CartContext';
 
 export default function Layout() {
   const { user, logout } = useAuth();

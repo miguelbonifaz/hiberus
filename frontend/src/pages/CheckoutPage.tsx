@@ -1,10 +1,10 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router';
-import { useAuth } from '../context/AuthContext';
-import { useCart } from '../context/CartContext';
-import { orderApi } from '../services/api';
-import PaymentForm from '../components/PaymentForm';
-import type { Order } from '../types';
+import { useAuth } from '@/context/AuthContext';
+import { useCart } from '@/context/CartContext';
+import { orderApi } from '@/services/api';
+import PaymentForm from '@/components/PaymentForm';
+import type { Order } from '@/types';
 
 export default function CheckoutPage() {
   const { user } = useAuth();

@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router';
-import { useAuth } from '../context/AuthContext';
-import { useCart } from '../context/CartContext';
-import { useToast } from '../context/ToastContext';
-import { productApi } from '../services/api';
-import type { Product } from '../types';
+import { useAuth } from '@/context/AuthContext';
+import { useCart } from '@/context/CartContext';
+import { useToast } from '@/context/ToastContext';
+import { productApi } from '@/services/api';
+import type { Product } from '@/types';
 
 export default function ProductDetailPage() {
   const { id } = useParams<{ id: string }>();

@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { useNavigate } from "react-router";
-import { useAuth } from "../context/AuthContext";
-import { orderApi } from "../services/api";
-import PaymentForm from "../components/PaymentForm";
-import type { Order } from "../types";
+import { useAuth } from '@/context/AuthContext';
+import { orderApi } from '@/services/api';
+import PaymentForm from '@/components/PaymentForm';
+import type { Order } from '@/types';
 
 export default function OrderDetailPage() {
   const { user } = useAuth();

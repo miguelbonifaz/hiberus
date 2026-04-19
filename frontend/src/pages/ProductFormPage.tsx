@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router";
-import { productApi } from "../services/api";
+import { productApi } from '@/services/api';
+import { CATEGORIES, CATEGORY_OPTIONS } from '@/constants';
 
 type FormData = {
   name: string;
@@ -9,7 +10,6 @@ type FormData = {
   stock: string;
   category: string;
 };
-const CATEGORIES = ["Electronics", "Accessories", "Furniture", "Other"];
 
 const empty: FormData = {
   name: "",
@@ -54,7 +54,7 @@ export default function ProductFormPage() {
       setForm((f) => ({ ...f, [key]: e.target.value }));
 
   const isOtherCategory =
-    form.category !== "" && !CATEGORIES.slice(0, -1).includes(form.category);
+    form.category !== "" && !CATEGORY_OPTIONS.includes(form.category as any);
 
   const handleCategoryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const val = e.target.value;
