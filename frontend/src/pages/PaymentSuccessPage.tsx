@@ -52,14 +52,6 @@ export default function PaymentSuccessPage() {
         >
           Continue Shopping
         </button>
-
-        <button
-          onClick={() => navigate('/order')}
-          className="btn btn-ghost btn-block"
-          style={{ marginTop: 8 }}
-        >
-          View Orders
-        </button>
       </div>
     </div>
   );

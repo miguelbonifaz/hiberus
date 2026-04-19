@@ -1,5 +1,6 @@
 import { createBrowserRouter, RouterProvider } from "react-router";
 import { AuthProvider } from "./context/AuthContext";
+import { RequireAuth, RequireAdmin } from "./context/AuthContext";
 import { CartProvider } from "./context/CartContext";
 import { ToastProvider } from "./context/ToastContext";
 import Layout from "./components/Layout";
@@ -18,14 +19,38 @@ const router = createBrowserRouter([
     children: [
       { path: "/", element: <LoginPage /> },
       { path: "/login", element: <LoginPage /> },
-      { path: "/catalog", element: <CatalogPage /> },
-      { path: "/products/:id", element: <ProductDetailPage /> },
-      { path: "/products/new", element: <ProductFormPage /> },
-      { path: "/products/:id/edit", element: <ProductFormPage /> },
-      { path: "/cart", element: <CartPage /> },
-      { path: "/checkout", element: <CheckoutPage /> },
-      { path: "/payment/success", element: <PaymentSuccessPage /> },
-      { path: "/payment/failed", element: <PaymentFailedPage /> },
+      {
+        path: "/catalog",
+        element: <RequireAuth><CatalogPage /></RequireAuth>,
+      },
+      {
+        path: "/products/:id",
+        element: <RequireAuth><ProductDetailPage /></RequireAuth>,
+      },
+      {
+        path: "/products/new",
+        element: <RequireAdmin><ProductFormPage /></RequireAdmin>,
+      },
+      {
+        path: "/products/:id/edit",
+        element: <RequireAdmin><ProductFormPage /></RequireAdmin>,
+      },
+      {
+        path: "/cart",
+        element: <RequireAuth><CartPage /></RequireAuth>,
+      },
+      {
+        path: "/checkout",
+        element: <RequireAuth><CheckoutPage /></RequireAuth>,
+      },
+      {
+        path: "/payment/success",
+        element: <RequireAuth><PaymentSuccessPage /></RequireAuth>,
+      },
+      {
+        path: "/payment/failed",
+        element: <RequireAuth><PaymentFailedPage /></RequireAuth>,
+      },
     ],
   },
 ]);
