@@ -1,0 +1,125 @@
+{
+	"info": {
+		"_postman_id": "hiberus-api-collection",
+		"name": "Hiberus API",
+		"description": "API REST para gestión de pedidos y pagos",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Products",
+			"item": [
+				{
+					"name": "List Products (Public)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/products?search=&page=1&sort=id&direction=ASC",
+							"host": ["{{base_url}}"],
+							"path": ["api", "products"],
+							"query": [
+								{ "key": "search", "value": "", "description": "Buscar por nombre, descripción o categoría" },
+								{ "key": "page", "value": "1", "description": "Número de página" },
+								{ "key": "sort", "value": "id", "description": "Campo de orden: id, name, price, stock, category" },
+								{ "key": "direction", "value": "ASC", "description": "ASC o DESC" }
+							]
+						},
+						"description": "Lista productos paginados. No requiere autenticación."
+					},
+					"response": []
+				},
+				{
+					"name": "Create Product (Admin)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{ "key": "X-User-Id", "value": "1" },
+							{ "key": "X-User-Role", "value": "ADMIN" },
+							{ "key": "Content-Type", "value": "application/json" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"name\": \"Test Product\",\n\t\"description\": \"A test product\",\n\t\"price\": 99.99,\n\t\"stock\": 100,\n\t\"category\": \"Electronics\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/products",
+							"host": ["{{base_url}}"],
+							"path": ["api", "products"]
+						},
+						"description": "Crea un producto nuevo. Requiere rol ADMIN."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Orders",
+			"item": [
+				{
+					"name": "Create Order",
+					"request": {
+						"method": "POST",
+						"header": [
+							{ "key": "X-User-Id", "value": "2" },
+							{ "key": "X-User-Role", "value": "CLIENT" },
+							{ "key": "Content-Type", "value": "application/json" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"items\": [\n\t\t{ \"productId\": 1, \"quantity\": 2 },\n\t\t{ \"productId\": 4, \"quantity\": 1 }\n\t]\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/orders",
+							"host": ["{{base_url}}"],
+							"path": ["api", "orders"]
+						},
+						"description": "Crea un pedido. El stock se descuenta al crear. Requiere rol CLIENT."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Order Detail",
+					"request": {
+						"method": "GET",
+						"header": [
+							{ "key": "X-User-Id", "value": "2" },
+							{ "key": "X-User-Role", "value": "CLIENT" }
+						],
+						"url": {
+							"raw": "{{base_url}}/api/orders/1",
+							"host": ["{{base_url}}"],
+							"path": ["api", "orders", "1"]
+						},
+						"description": "Ver detalle de un pedido. Solo el dueño (mismo X-User-Id) puede verlo."
+					},
+					"response": []
+				},
+				{
+					"name": "Checkout (Pay Order)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{ "key": "X-User-Id", "value": "2" },
+							{ "key": "X-User-Role", "value": "CLIENT" }
+						],
+						"url": {
+							"raw": "{{base_url}}/api/orders/1/checkout",
+							"host": ["{{base_url}}"],
+							"path": ["api", "orders", "1", "checkout"]
+						},
+						"description": "Simula el pago. 80% probabilidad de éxito (200), 20% de fallo (402). Solo el dueño puede hacer checkout."
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8000",
+			"type": "string"
+		}
+	]
+}
