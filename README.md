@@ -147,6 +147,6 @@ npm run dev
 
 ## Stack
 
-- **Backend**: PHP 8.3, Symfony 7, Doctrine ORM, MySQL 8
+- **Backend**: PHP 8.2, Symfony 7, Doctrine ORM, PostgreSQL 16
 - **Frontend**: React 19, TypeScript, Vite, React Router 7, Axios
-- **Infra**: Docker Compose (PHP/Apache, MySQL 8, Node/Vite)
+- **Infra**: Docker Compose (PHP/Apache, PostgreSQL 16, Node/Vite)
