@@ -9,6 +9,8 @@ type FormData = {
   stock: string;
   category: string;
 };
+const CATEGORIES = ["Electronics", "Accessories", "Furniture", "Other"];
+
 const empty: FormData = {
   name: "",
   description: "",
@@ -26,6 +28,7 @@ export default function ProductFormPage() {
   const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(isEdit);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [customCategory, setCustomCategory] = useState("");
 
   useEffect(() => {
     if (!isEdit) return;
@@ -49,6 +52,25 @@ export default function ProductFormPage() {
     (key: keyof FormData) =>
     (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
       setForm((f) => ({ ...f, [key]: e.target.value }));
+
+  const isOtherCategory =
+    form.category !== "" && !CATEGORIES.slice(0, -1).includes(form.category);
+
+  const handleCategoryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const val = e.target.value;
+    if (val === "Other") {
+      setForm((f) => ({ ...f, category: customCategory || "" }));
+    } else {
+      setCustomCategory("");
+      setForm((f) => ({ ...f, category: val }));
+    }
+  };
+
+  const handleCustomCategory = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    setCustomCategory(val);
+    setForm((f) => ({ ...f, category: val }));
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -183,13 +205,31 @@ export default function ProductFormPage() {
 
         <div className="field">
           <label>Category *</label>
-          <input
+          <select
             className="input"
             required
-            value={form.category}
-            onChange={set("category")}
-            placeholder="e.g. Electronics"
-          />
+            value={isOtherCategory ? "Other" : form.category}
+            onChange={handleCategoryChange}
+          >
+            <option value="" disabled>
+              Select a category
+            </option>
+            {CATEGORIES.map((cat) => (
+              <option key={cat} value={cat}>
+                {cat}
+              </option>
+            ))}
+          </select>
+          {isOtherCategory && (
+            <input
+              className="input"
+              required
+              value={customCategory}
+              onChange={handleCustomCategory}
+              placeholder="Enter custom category"
+              style={{ marginTop: 8 }}
+            />
+          )}
           {errors.category && (
             <span style={{ fontSize: 12, color: "var(--gray-600)" }}>
               {errors.category}

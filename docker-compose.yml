@@ -27,6 +27,7 @@ services:
       db:
         condition: service_healthy
     environment:
+      APP_ENV: dev
       DATABASE_URL: "postgresql://hiberus:hiberus@db:5432/hiberus_test?serverVersion=16&charset=utf8"
 
   frontend:

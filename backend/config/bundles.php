@@ -17,5 +17,5 @@ return [
     TwigBundle::class => ['all' => true],
     TwigExtraBundle::class => ['all' => true],
     NelmioCorsBundle::class => ['all' => true],
-    DoctrineFixturesBundle::class => ['dev' => true, 'test' => true],
+    DoctrineFixturesBundle::class => ['all' => true],
 ];

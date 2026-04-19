@@ -1,0 +1,9 @@
+services:
+  backend:
+    environment:
+      DATABASE_URL: "postgresql://hiberus:hiberus@db:5432/hiberus_test?serverVersion=16&charset=utf8"
+      CORS_ALLOW_ORIGIN: "^https?://(204\\.168\\.240\\.117|localhost|127\\.0\\.0\\.1)(:[0-9]+)?$"
+      APP_ENV: dev
+  frontend:
+    environment:
+      VITE_API_URL: "http://204.168.240.117:8000"
