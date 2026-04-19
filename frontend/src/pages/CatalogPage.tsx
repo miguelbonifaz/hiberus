@@ -1,5 +1,5 @@
-import { useState, useEffect, useMemo } from "react";
-import { useNavigate } from "react-router";
+import { useState, useEffect, useMemo, useCallback } from "react";
+import { useNavigate, useSearchParams } from "react-router";
 import { useAuth } from '@/context/AuthContext';
 import { useCart } from '@/context/CartContext';
 import { useToast } from '@/context/ToastContext';
@@ -16,25 +16,55 @@ const SORT_OPTIONS = [
 
 type SortValue = (typeof SORT_OPTIONS)[number]["value"];
 
+const VALID_SORTS = new Set<string>(SORT_OPTIONS.map((o) => o.value));
+const VALID_DIRS = new Set(["ASC", "DESC"]);
+
 export default function CatalogPage() {
   const { isAdmin } = useAuth();
   const { addItem } = useCart();
   const { toast } = useToast();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+
   const [products, setProducts] = useState<Product[]>([]);
   const [total, setTotal] = useState(0);
-  const [page, setPage] = useState(1);
-  const [search, setSearch] = useState("");
-  const [sort, setSort] = useState<SortValue>("id");
-  const [direction, setDirection] = useState<"ASC" | "DESC">("ASC");
-  const [category, setCategory] = useState("");
   const [loading, setLoading] = useState(false);
+
+  const search = searchParams.get("search") ?? "";
+  const page = Math.max(1, Number(searchParams.get("page")) || 1);
+  const sort: SortValue = VALID_SORTS.has(searchParams.get("sort") ?? "")
+    ? (searchParams.get("sort") as SortValue)
+    : "id";
+  const direction: "ASC" | "DESC" = VALID_DIRS.has(searchParams.get("dir") ?? "")
+    ? (searchParams.get("dir") as "ASC" | "DESC")
+    : "ASC";
+  const category = searchParams.get("category") ?? "";
 
   const activeFilters = useMemo(() => {
     const count =
       (category ? 1 : 0) + (search ? 1 : 0) + (sort !== "id" ? 1 : 0);
     return count;
   }, [category, search, sort]);
+
+  const setFilter = useCallback(
+    (updates: Record<string, string | null>) => {
+      setSearchParams((prev) => {
+        const next = new URLSearchParams(prev);
+        for (const [key, value] of Object.entries(updates)) {
+          if (value === null || value === "") {
+            next.delete(key);
+          } else {
+            next.set(key, value);
+          }
+        }
+        if (!("page" in updates)) {
+          next.delete("page");
+        }
+        return next;
+      }, { replace: true });
+    },
+    [setSearchParams],
+  );
 
   useEffect(() => {
     setLoading(true);
@@ -49,11 +79,7 @@ export default function CatalogPage() {
   }, [search, page, sort, direction, category]);
 
   const clearFilters = () => {
-    setSearch("");
-    setCategory("");
-    setSort("id");
-    setDirection("ASC");
-    setPage(1);
+    setSearchParams({}, { replace: true });
   };
 
   const totalPages = Math.ceil(total / 10);
@@ -61,9 +87,10 @@ export default function CatalogPage() {
   return (
     <div className="page">
       <div className="page-header">
-        <h1 className="page-title">Catalog</h1>
-        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <span className="page-subtitle">{total} products</span>
+        <h1 className="page-title">
+          Catalog<span className="page-header-count">{total}</span>
+        </h1>
+        <div className="page-header-actions">
           {isAdmin && (
             <button
               onClick={() => navigate("/products/new")}
@@ -96,18 +123,12 @@ export default function CatalogPage() {
               className="input filter-search-input"
               placeholder="Search by name or description..."
               value={search}
-              onChange={(e) => {
-                setSearch(e.target.value);
-                setPage(1);
-              }}
+              onChange={(e) => setFilter({ search: e.target.value || null })}
             />
             {search && (
               <button
                 className="filter-clear-btn"
-                onClick={() => {
-                  setSearch("");
-                  setPage(1);
-                }}
+                onClick={() => setFilter({ search: null })}
                 aria-label="Clear search"
               >
                 ×
@@ -119,10 +140,7 @@ export default function CatalogPage() {
             <select
               className="input filter-sort-select"
               value={sort}
-              onChange={(e) => {
-                setSort(e.target.value as SortValue);
-                setPage(1);
-              }}
+              onChange={(e) => setFilter({ sort: e.target.value })}
             >
               {SORT_OPTIONS.map((opt) => (
                 <option key={opt.value} value={opt.value}>
@@ -132,10 +150,9 @@ export default function CatalogPage() {
             </select>
             <button
               className="btn btn-sort-dir"
-              onClick={() => {
-                setDirection(direction === "ASC" ? "DESC" : "ASC");
-                setPage(1);
-              }}
+              onClick={() =>
+                setFilter({ dir: direction === "ASC" ? "DESC" : "ASC" })
+              }
               title={direction === "ASC" ? "Ascending" : "Descending"}
             >
               {direction === "ASC" ? "↑" : "↓"}
@@ -148,10 +165,7 @@ export default function CatalogPage() {
           <div className="filter-pills">
             <button
               className={`filter-pill ${category === "" ? "filter-pill--active" : ""}`}
-              onClick={() => {
-                setCategory("");
-                setPage(1);
-              }}
+              onClick={() => setFilter({ category: null })}
             >
               All
             </button>
@@ -159,10 +173,9 @@ export default function CatalogPage() {
               <button
                 key={cat}
                 className={`filter-pill ${category === cat ? "filter-pill--active" : ""}`}
-                onClick={() => {
-                  setCategory(category === cat ? "" : cat);
-                  setPage(1);
-                }}
+                onClick={() =>
+                  setFilter({ category: category === cat ? null : cat })
+                }
               >
                 {cat}
               </button>
@@ -181,11 +194,14 @@ export default function CatalogPage() {
       ) : products.length === 0 ? (
         <div className="empty-state">
           <p className="empty-state-title">No products found</p>
+          {activeFilters > 0 && (
+            <p className="empty-state-hint">Try adjusting your filters</p>
+          )}
         </div>
       ) : (
         <>
           <div className="catalog-table-wrap">
-            <div style={{ overflowX: "auto" }}>
+            <div className="table-scroll">
               <table className="data-table">
                 <thead>
                   <tr>
@@ -193,7 +209,7 @@ export default function CatalogPage() {
                     <th>Category</th>
                     <th>Price</th>
                     <th>Stock</th>
-                    <th style={{ textAlign: "right" }}>Actions</th>
+                    <th className="th-right">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -221,13 +237,7 @@ export default function CatalogPage() {
                         )}
                       </td>
                       <td>
-                        <div
-                          style={{
-                            display: "flex",
-                            justifyContent: "flex-end",
-                            gap: 8,
-                          }}
-                        >
+                        <div className="table-actions">
                           <button
                             onClick={() => navigate(`/products/${p.id}`)}
                             className="btn btn-ghost btn-sm"
@@ -316,7 +326,7 @@ export default function CatalogPage() {
       {totalPages > 1 && (
         <div className="pagination">
           <button
-            onClick={() => setPage(Math.max(1, page - 1))}
+            onClick={() => setFilter({ page: String(Math.max(1, page - 1)) })}
             disabled={page === 1}
             className="btn btn-sm"
           >
@@ -328,7 +338,7 @@ export default function CatalogPage() {
             <span className="pagination-total">{totalPages}</span>
           </span>
           <button
-            onClick={() => setPage(page + 1)}
+            onClick={() => setFilter({ page: String(page + 1) })}
             disabled={page >= totalPages}
             className="btn btn-sm"
           >

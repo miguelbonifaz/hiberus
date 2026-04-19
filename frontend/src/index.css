@@ -166,18 +166,54 @@ table.data-table thead th {
   border-bottom: 1px solid var(--gray-200);
 }
 
+table.data-table thead th.th-right {
+  text-align: right;
+}
+
 table.data-table tbody tr {
   border-bottom: 1px solid var(--gray-200);
-  transition: background var(--transition);
+  transition:
+    background var(--transition),
+    box-shadow var(--transition);
+  animation: row-enter 200ms ease-out both;
+}
+
+table.data-table tbody tr:hover {
+  background: var(--gray-100);
+  box-shadow: inset 3px 0 0 var(--black);
 }
 
 table.data-table tbody tr:hover {
   background: var(--gray-100);
 }
+
 table.data-table tbody td {
   padding: 14px 16px;
   font-size: 14px;
+  vertical-align: middle;
 }
+
+@keyframes row-enter {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+table.data-table tbody tr:nth-child(1) { animation-delay: 0ms; }
+table.data-table tbody tr:nth-child(2) { animation-delay: 30ms; }
+table.data-table tbody tr:nth-child(3) { animation-delay: 60ms; }
+table.data-table tbody tr:nth-child(4) { animation-delay: 90ms; }
+table.data-table tbody tr:nth-child(5) { animation-delay: 120ms; }
+table.data-table tbody tr:nth-child(6) { animation-delay: 150ms; }
+table.data-table tbody tr:nth-child(7) { animation-delay: 180ms; }
+table.data-table tbody tr:nth-child(8) { animation-delay: 210ms; }
+table.data-table tbody tr:nth-child(9) { animation-delay: 240ms; }
+table.data-table tbody tr:nth-child(10) { animation-delay: 270ms; }
 
 /* ── Status badges ── */
 .badge {
@@ -219,7 +255,7 @@ table.data-table tbody td {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
-  padding-bottom: 24px;
+  padding-bottom: 28px;
   border-bottom: 1px solid var(--gray-200);
   margin-bottom: 32px;
 }
@@ -231,6 +267,16 @@ table.data-table tbody td {
   letter-spacing: -0.02em;
   line-height: 1;
   font-style: italic;
+}
+
+.page-header-count {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 400;
+  letter-spacing: 0.08em;
+  color: var(--gray-400);
+  margin-left: 12px;
+  vertical-align: super;
 }
 
 .card {
@@ -272,6 +318,7 @@ table.data-table tbody td {
   font-family: var(--font-mono);
   font-size: 14px;
   font-weight: 500;
+  letter-spacing: 0.02em;
 }
 
 /* ── Buttons ── */
@@ -397,7 +444,7 @@ table.data-table tbody td {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 80px 0;
+  padding: 100px 0;
   text-align: center;
 }
 
@@ -408,7 +455,14 @@ table.data-table tbody td {
   font-style: italic;
   line-height: 1.2;
   color: var(--gray-300);
-  margin-bottom: 32px;
+  margin-bottom: 8px;
+}
+
+.empty-state-hint {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  color: var(--gray-400);
 }
 
 /* ── Order line items ── */
@@ -613,12 +667,14 @@ hr.divider {
 .product-name {
   font-weight: 600;
   font-size: 14px;
+  letter-spacing: 0.01em;
 }
 
 .product-desc {
   font-size: 12px;
-  color: var(--gray-500);
-  margin-top: 2px;
+  color: var(--gray-400);
+  margin-top: 3px;
+  line-height: 1.4;
 }
 
 /* ── Form actions ── */
@@ -631,13 +687,15 @@ hr.divider {
 /* ── Catalog filters ── */
 .catalog-filters {
   margin-bottom: 40px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid var(--gray-100);
 }
 
 .filter-row {
   display: flex;
   align-items: stretch;
   gap: 12px;
-  margin-bottom: 16px;
+  margin-bottom: 20px;
 }
 
 .filter-search-wrap {
@@ -732,6 +790,11 @@ hr.divider {
   color: var(--black);
 }
 
+.btn-sort-dir:active {
+  background: var(--gray-200);
+  transform: scale(0.96);
+}
+
 .btn-sort-dir:focus-visible {
   outline: 2px solid var(--black);
   outline-offset: -2px;
@@ -772,9 +835,14 @@ hr.divider {
   color: var(--gray-500);
   cursor: pointer;
   transition:
-    background var(--transition),
-    color var(--transition),
-    border-color var(--transition);
+    background 200ms ease,
+    color 200ms ease,
+    border-color 200ms ease,
+    transform 100ms ease;
+}
+
+.filter-pill:active {
+  transform: scale(0.97);
 }
 
 .filter-pill:hover {
@@ -830,6 +898,11 @@ hr.divider {
   margin-top: 48px;
   padding-top: 32px;
   border-top: 1px solid var(--gray-200);
+}
+
+.pagination .btn {
+  min-width: 80px;
+  justify-content: center;
 }
 
 .pagination-indicator {
@@ -1333,6 +1406,11 @@ hr.divider {
   -webkit-overflow-scrolling: touch;
 }
 
+/* ── Catalog table frame ── */
+.catalog-table-wrap {
+  border-top: 1px solid var(--black);
+}
+
 /* ── Grid 2 col (collapses on mobile) ── */
 .grid-2col {
   display: grid;
@@ -1340,18 +1418,29 @@ hr.divider {
   gap: 16px;
 }
 
+.page-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.table-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
 /* ── Catalog cards (mobile only) ── */
 .catalog-cards {
   display: none;
   flex-direction: column;
-  gap: 1px;
-  background: var(--gray-200);
-  border: 1px solid var(--gray-200);
+  border-top: 1px solid var(--gray-200);
 }
 
 .catalog-card {
   background: var(--white);
-  padding: 16px;
+  padding: 20px 16px;
+  border-bottom: 1px solid var(--gray-200);
 }
 
 .catalog-card-header {
@@ -1359,16 +1448,16 @@ hr.divider {
   justify-content: space-between;
   align-items: flex-start;
   gap: 12px;
-  margin-bottom: 10px;
+  margin-bottom: 12px;
 }
 
 .catalog-card-meta {
   display: flex;
   align-items: center;
   gap: 12px;
-  margin-bottom: 14px;
-  padding-bottom: 12px;
-  border-bottom: 1px solid var(--gray-200);
+  margin-bottom: 16px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--gray-100);
 }
 
 .catalog-card-actions {
@@ -1412,6 +1501,10 @@ hr.divider {
     flex-wrap: wrap;
     gap: 12px;
     align-items: flex-start;
+  }
+
+  .page-header-count {
+    display: none;
   }
 
   .meta-grid {
@@ -1461,6 +1554,21 @@ hr.divider {
   .catalog-cards {
     display: flex;
   }
+
+  .catalog-card {
+    animation: row-enter 200ms ease-out both;
+  }
+
+  .catalog-card:nth-child(1) { animation-delay: 0ms; }
+  .catalog-card:nth-child(2) { animation-delay: 40ms; }
+  .catalog-card:nth-child(3) { animation-delay: 80ms; }
+  .catalog-card:nth-child(4) { animation-delay: 120ms; }
+  .catalog-card:nth-child(5) { animation-delay: 160ms; }
+  .catalog-card:nth-child(6) { animation-delay: 200ms; }
+  .catalog-card:nth-child(7) { animation-delay: 240ms; }
+  .catalog-card:nth-child(8) { animation-delay: 280ms; }
+  .catalog-card:nth-child(9) { animation-delay: 320ms; }
+  .catalog-card:nth-child(10) { animation-delay: 360ms; }
 
   .payment-row {
     flex-direction: column;
@@ -1531,6 +1639,10 @@ hr.divider {
   .page-header {
     flex-wrap: wrap;
     gap: 12px;
+  }
+
+  .page-header-count {
+    display: none;
   }
 
   .login-box {
