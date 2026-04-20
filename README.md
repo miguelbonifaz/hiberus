@@ -110,7 +110,7 @@ docker compose exec frontend npm run build
 
 ## Documentación
 
-- OpenAPI 3.0: `docs/openapi.yaml`
+- Colección Postman: `docs/hiberus-api.postman_collection.json`
 
 ## Stack
 
